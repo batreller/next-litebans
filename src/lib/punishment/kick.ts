@@ -6,13 +6,31 @@ import { PunishmentListItem } from "@/types";
 import { db } from "../db";
 import { getPlayerName } from "./punishment";
 
-const getKickCount = async (player?: string, staff?: string) => {
+const kickCountCache = new Map();
+const KICK_CACHE_TTL = 15 * 60 * 1000; // 15 min
+
+const getKickCount = async (player?: string, staff?: string, useCache: boolean = true) => {
+  const cacheKey = `${player || 'null'}_${staff || 'null'}`;
+
+  if (useCache) {
+    const cached = kickCountCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < KICK_CACHE_TTL) {
+      return cached.data;
+    }
+  }
+
   const count = await db.litebans_kicks.count({
     where: {
       uuid: player,
       banned_by_uuid: staff
     }
   });
+
+  kickCountCache.set(cacheKey, {
+    data: count,
+    timestamp: Date.now()
+  });
+
   return count;
 }
 

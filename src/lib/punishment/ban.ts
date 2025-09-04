@@ -7,13 +7,30 @@ import { db } from "../db";
 import { getPlayerName } from "./punishment";
 import { Dictionary } from "../language/types";
 
-const getBanCount = async (player?: string, staff?: string) => {
+const banCountCache = new Map();
+const BAN_CACHE_TTL = 15 * 60 * 1000; // 15 min
+
+const getBanCount = async (player?: string, staff?: string, useCache: boolean = true) => {
+  const cacheKey = `${player || 'null'}_${staff || 'null'}`;
+
+  if (useCache) {
+    const cached = banCountCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < BAN_CACHE_TTL) {
+      return cached.data;
+    }
+  }
+
   const count = await db.litebans_bans.count({
     where: {
       uuid: player,
       banned_by_uuid: staff
     }
   });
+  banCountCache.set(cacheKey, {
+    data: count,
+    timestamp: Date.now()
+  });
+
   return count;
 }
 

@@ -6,13 +6,31 @@ import { PunishmentListItem } from "@/types";
 import { db } from "../db";
 import { getPlayerName } from "./punishment";
 
-const getWarnCount = async (player?: string, staff?: string) => {
+const warnCountCache = new Map();
+const WARN_CACHE_TTL = 15 * 60 * 1000; // 15 min
+
+const getWarnCount = async (player?: string, staff?: string, useCache: boolean = true) => {
+  const cacheKey = `${player || 'null'}_${staff || 'null'}`;
+
+  if (useCache) {
+    const cached = warnCountCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < WARN_CACHE_TTL) {
+      return cached.data;
+    }
+  }
+
   const count = await db.litebans_warnings.count({
     where: {
       uuid: player,
       banned_by_uuid: staff
     }
   });
+
+  warnCountCache.set(cacheKey, {
+    data: count,
+    timestamp: Date.now()
+  });
+
   return count;
 }
 

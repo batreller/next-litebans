@@ -4,32 +4,16 @@ import { PunishmentListItem } from "@/types";
 
 import { db } from "../db";
 import { Dictionary } from "../language/types";
+import {getBanCount} from "@/lib/punishment/ban";
+import {getMuteCount} from "@/lib/punishment/mute";
+import {getWarnCount} from "@/lib/punishment/warn";
+import {getKickCount} from "@/lib/punishment/kick";
 
 const getPunishmentCount = async (player?: string, staff?: string) => {
-  const bans = await db.litebans_bans.count({
-    where: {
-      uuid: player,
-      banned_by_uuid: staff
-    }
-  });
-  const mutes = await db.litebans_mutes.count({
-    where: {
-      uuid: player,
-      banned_by_uuid: staff
-    }
-  });
-  const warns = await db.litebans_warnings.count({
-    where: {
-      uuid: player,
-      banned_by_uuid: staff
-    }
-  });
-  const kicks = await db.litebans_kicks.count({
-    where: {
-      uuid: player,
-      banned_by_uuid: staff
-    }
-  });
+  const bans = await getBanCount(player, staff);
+  const mutes = await getMuteCount(player, staff);
+  const warns = await getWarnCount(player, staff);
+  const kicks = await getKickCount(player, staff);
 
   return { bans, mutes, warns, kicks }
 }

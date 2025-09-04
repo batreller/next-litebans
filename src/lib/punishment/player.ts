@@ -1,4 +1,8 @@
 import { db } from "../db";
+import {getWarnCount} from "@/lib/punishment/warn";
+import {getKickCount} from "@/lib/punishment/kick";
+import {getMuteCount} from "@/lib/punishment/mute";
+import {getBanCount} from "@/lib/punishment/ban";
 
 const getPlayerByName = async (name: string) => {
   const player = await db.litebans_history.findFirst({
@@ -18,43 +22,19 @@ const getPlayerByName = async (name: string) => {
 }
 
 const getPlayerBanCount = async (uuid: string) => {
-  const count = await db.litebans_bans.count({
-    where: {
-      uuid
-    }
-  });
-
-  return count;
+    return await getBanCount(uuid);
 }
 
 const getPlayerMuteCount = async (uuid: string) => {
-  const count = await db.litebans_mutes.count({
-    where: {
-      uuid
-    }
-  });
-
-  return count;
+    return await getMuteCount(uuid);
 }
 
 const getPlayerWarnCount = async (uuid: string) => {
-  const count = await db.litebans_warnings.count({
-    where: {
-      uuid
-    }
-  });
-
-  return count;
+    return await getWarnCount(uuid);
 }
 
 const getPlayerKickCount = async (uuid: string) => {
-  const count = await db.litebans_kicks.count({
-    where: {
-      uuid
-    }
-  });
-
-  return count;
+    return await getKickCount(uuid);
 }
 
 export { getPlayerByName, getPlayerBanCount, getPlayerMuteCount, getPlayerWarnCount, getPlayerKickCount}
